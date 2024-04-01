@@ -1,7 +1,10 @@
 package com.eontecnologia.picpaydesafiobackend.transaction;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.eontecnologia.picpaydesafiobackend.exception.InvalidTransactionException;
+import com.eontecnologia.picpaydesafiobackend.wallet.Wallet;
 import com.eontecnologia.picpaydesafiobackend.wallet.WalletRepository;
 import com.eontecnologia.picpaydesafiobackend.wallet.WalletType;
 
@@ -16,6 +19,7 @@ public class TransactionService {
     this.walletRepository = walletRepository;
   }
 
+  @Transactional
   public Transaction create(Transaction transaction) {
     // 1 - Validar
     validate(transaction)
@@ -41,8 +45,14 @@ public class TransactionService {
   private void validate(Transaction transaction) {
     walletRepository.findById(transaction.payee())
         .map(payee -> walletRepository.findById(transaction.payer())
-            .map(payer -> payer.type() == WalletType.COMUM.getValue() &&
-                payer.balance().compareTo(transaction.value()) >= 0 &&
-                !payer.id().equals(transaction.payee()) ? transaction : null));
+            .map(payer -> isTransactionValid(transaction, payer) ? transaction : null)
+            .orElseThrow(() -> new InvalidTransactionException("Invalid transaction - %s" + transaction)))
+        .orElseThrow(() -> new InvalidTransactionException("Invalid transaction - %s" + transaction));
+  }
+
+  private boolean isTransactionValid(Transaction transaction, Wallet payer) {
+    return payer.type() == WalletType.COMUM.getValue() &&
+        payer.balance().compareTo(transaction.value()) >= 0 &&
+        !payer.id().equals(transaction.payee());
   }
 }
