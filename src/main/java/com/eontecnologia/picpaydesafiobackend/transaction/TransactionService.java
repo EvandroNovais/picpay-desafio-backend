@@ -22,7 +22,7 @@ public class TransactionService {
   @Transactional
   public Transaction create(Transaction transaction) {
     // 1 - Validar
-    validate(transaction)
+    validate(transaction);
 
     // 2 - Criar
     var newTransaction = transactionRepository.save(transaction);
@@ -32,6 +32,7 @@ public class TransactionService {
     walletRepository.save(wallet.debit(transaction.value()));
 
     // 4 - Chamar serviços externos
+    // authorize transaction
 
     return newTransaction;
 
