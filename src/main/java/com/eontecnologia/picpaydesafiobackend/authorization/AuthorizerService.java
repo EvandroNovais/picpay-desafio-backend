@@ -1,9 +1,9 @@
 package com.eontecnologia.picpaydesafiobackend.authorization;
 
-import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.eontecnologia.picpaydesafiobackend.exception.UnauthorizedTransactionException;
 import com.eontecnologia.picpaydesafiobackend.transaction.Transaction;
 
 @Service
@@ -21,6 +21,8 @@ public class AuthorizerService {
         .retrieve()
         .toEntity(Authorization.class);
 
+    if (response.getStatusCode().isError() || !response.getBody().isAuthorized()) {
+      throw new UnauthorizedTransactionException("Unauthorized transaction");
+    }
   }
-
 }
