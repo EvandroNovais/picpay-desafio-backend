@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eontecnologia.picpaydesafiobackend.authorization.AuthorizerService;
+import com.eontecnologia.picpaydesafiobackend.notification.NotificationService;
 import com.eontecnologia.picpaydesafiobackend.wallet.Wallet;
 import com.eontecnologia.picpaydesafiobackend.wallet.WalletRepository;
 import com.eontecnologia.picpaydesafiobackend.wallet.WalletType;
@@ -14,12 +15,14 @@ public class TransactionService {
   private final TransactionRepository transactionRepository;
   private final WalletRepository walletRepository;
   private final AuthorizerService authorizerService;
+  private final NotificationService notificationService;
 
   public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository,
-      AuthorizerService authorizerService) {
+      AuthorizerService authorizerService, NotificationService notificationService) {
     this.transactionRepository = transactionRepository;
     this.walletRepository = walletRepository;
     this.authorizerService = authorizerService;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -37,6 +40,9 @@ public class TransactionService {
     // 4 - Chamar serviços externos
     // authorize transaction
     authorizerService.authorize(transaction);
+
+    // 5 - Enviar notificação
+    notificationService.notify(transaction);
 
     return newTransaction;
 
