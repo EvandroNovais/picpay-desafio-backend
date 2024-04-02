@@ -3,6 +3,7 @@ package com.eontecnologia.picpaydesafiobackend.transaction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.eontecnologia.picpaydesafiobackend.authorization.AuthorizerService;
 import com.eontecnologia.picpaydesafiobackend.exception.InvalidTransactionException;
 import com.eontecnologia.picpaydesafiobackend.wallet.Wallet;
 import com.eontecnologia.picpaydesafiobackend.wallet.WalletRepository;
@@ -13,10 +14,13 @@ public class TransactionService {
 
   private final TransactionRepository transactionRepository;
   private final WalletRepository walletRepository;
+  private final AuthorizerService authorizerService;
 
-  public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository) {
+  public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository,
+      AuthorizerService authorizerService) {
     this.transactionRepository = transactionRepository;
     this.walletRepository = walletRepository;
+    this.authorizerService = authorizerService;
   }
 
   @Transactional
@@ -33,6 +37,7 @@ public class TransactionService {
 
     // 4 - Chamar serviços externos
     // authorize transaction
+    authorizerService.authorize(transaction);
 
     return newTransaction;
 
