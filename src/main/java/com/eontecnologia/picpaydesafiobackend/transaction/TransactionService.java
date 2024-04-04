@@ -35,15 +35,18 @@ public class TransactionService {
     // 2 - Criar
     var newTransaction = transactionRepository.save(transaction);
 
-    // 3 - Debitar da carteira
-    var wallet = walletRepository.findById(transaction.payer()).get();
-    walletRepository.save(wallet.debit(transaction.value()));
+    // 3 - Debitar da carteira do pagador
+    var walletPayer = walletRepository.findById(transaction.payer()).get();
+    walletRepository.save(walletPayer.debit(transaction.value()));
+    // 4 - Creditar na carteira do recebedor
+    var walletPayee = walletRepository.findById(transaction.payee()).get();
+    walletRepository.save(walletPayee.credit(transaction.value()));
 
-    // 4 - Chamar serviços externos
+    // 5 - Chamar serviços externos
     // authorize transaction
     authorizerService.authorize(transaction);
 
-    // 5 - Enviar notificação
+    // 6 - Enviar notificação
     notificationService.notify(transaction);
 
     return newTransaction;
